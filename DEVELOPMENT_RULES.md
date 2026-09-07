@@ -2,317 +2,335 @@
 
 ## 1. Purpose
 
-This document defines the general engineering rules used across all projects.
+This document defines the baseline engineering rules for all projects using this development system.
 
-Project-specific requirements must be defined in `PROJECT_SPEC.md`.
+Project-specific requirements belong in `PROJECT_SPEC.md`.
 
-Technology-specific decisions must be defined in `ARCHITECTURE.md`.
+Architecture decisions belong in `ARCHITECTURE.md`.
 
----
+Security requirements belong in `SECURITY_RULES.md`.
 
-## 2. Core Engineering Principles
+UX and accessibility requirements belong in `UX_RULES.md`.
 
-All code must prioritize:
-
-1. Correctness
-2. Security
-3. Maintainability
-4. Scalability
-5. Performance
-6. Accessibility
-7. Testability
-8. Simplicity
-
-Do not sacrifice correctness for implementation speed.
-
-Avoid unnecessary complexity.
+Design tokens and visual rules belong in `DESIGN_SYSTEM.md`.
 
 ---
 
-## 3. Understand Before Changing
+## 2. Development Method
 
-Before modifying existing code:
+Projects MUST use a specification-driven workflow.
 
-* Inspect the relevant files.
-* Understand the existing architecture.
-* Identify reusable components and utilities.
-* Check existing API and database contracts.
-* Check existing tests.
-* Follow existing project conventions.
+The default workflow is:
 
-Do not rewrite working systems without a technical reason.
+```text
+Specify
+  ↓
+Clarify
+  ↓
+Plan
+  ↓
+Design / Contracts / Data Model
+  ↓
+Tasks
+  ↓
+Implement
+  ↓
+Verify
+  ↓
+Converge
+```
 
----
+Requirements MUST be defined before implementation.
 
-## 4. Component-First Development
+Implementation MUST be traceable to documented requirements.
 
-For frontend development:
+When requirements change, the specification and its derived artifacts MUST be updated so they remain consistent.
 
-* Reuse existing components whenever possible.
-* Extend an existing component when the interaction is substantially similar.
-* Create a new component only when the behavior or responsibility is genuinely different.
-* Avoid duplicated UI implementations.
-* Keep components focused on a clear responsibility.
-* Separate reusable UI from business logic.
+For large features, decompose the work into smaller independently testable specifications.
 
-Do not create page-specific copies of reusable components without justification.
-
----
-
-## 5. Separation of Responsibilities
-
-Keep responsibilities separated.
-
-### UI
-
-Responsible for:
-
-* Presentation
-* User interaction
-* UI state
-* Displaying loading/error/empty states
-
-### Business Logic
-
-Responsible for:
-
-* Business rules
-* Calculations
-* Workflows
-* Validation logic where appropriate
-
-### API
-
-Responsible for:
-
-* Request/response contracts
-* Authentication
-* Authorization
-* Input validation
-* Error responses
-
-### Database
-
-Responsible for:
-
-* Persistence
-* Data integrity
-* Indexing
-* Transactions
-* Data relationships
-
-Do not place the entire application logic inside UI components.
+This approach follows the principles of Spec-Driven Development used by GitHub Spec Kit.
 
 ---
 
-## 6. Type Safety
+## 3. Repository Rules
+
+The repository is the source of truth for the project.
+
+Important decisions MUST be documented in version control.
+
+Do not rely on undocumented instructions, temporary chat context, or memory for permanent project decisions.
+
+Project configuration MUST be separated from source code where appropriate.
+
+Secrets and credentials MUST NOT be committed to the repository.
+
+Environment-specific configuration MUST use environment/configuration mechanisms rather than hardcoded credentials or deployment-specific values.
+
+These principles are consistent with the Twelve-Factor App methodology.
+
+---
+
+## 4. Requirements Before Code
+
+Before implementation:
+
+* Understand the requested behavior.
+* Identify acceptance criteria.
+* Identify dependencies.
+* Identify affected frontend areas.
+* Identify affected backend areas.
+* Identify database changes.
+* Identify API contracts.
+* Identify security requirements.
+* Identify testing requirements.
+* Identify UX and accessibility requirements.
+
+If important requirements are ambiguous, clarify them before implementation.
+
+Do not silently invent business requirements.
+
+---
+
+## 5. Architecture
+
+Follow `ARCHITECTURE.md`.
+
+Do not introduce architectural patterns without a documented reason.
+
+Architecture decisions SHOULD consider:
+
+* Separation of concerns
+* Clear module boundaries
+* Testability
+* Maintainability
+* Security
+* Scalability
+* Operational requirements
+* Simplicity
+
+Avoid speculative abstractions and unnecessary complexity.
+
+Do not solve hypothetical future requirements unless the project explicitly requires them.
+
+---
+
+## 6. Implementation
+
+Implementation MUST follow the approved specification and plan.
+
+Code SHOULD be:
+
+* Clear
+* Cohesive
+* Testable
+* Maintainable
+* Understandable
+* Consistent with the existing codebase
+
+Prefer the simplest implementation that correctly satisfies the requirement.
+
+Do not introduce unnecessary frameworks, abstractions, dependencies, or patterns.
+
+---
+
+## 7. Component and Module Reuse
+
+Before creating new code:
+
+1. Search for an existing implementation.
+2. Determine whether it can be reused.
+3. Determine whether it can be safely extended.
+4. Create a new implementation only when necessary.
+
+Do not duplicate existing functionality.
+
+Do not create multiple sources of truth for the same behavior.
+
+---
+
+## 8. Type Safety
 
 When TypeScript is used:
 
-* Prefer strict typing.
-* Avoid `any`.
-* Define explicit interfaces/types for important data structures.
-* Keep API request and response types synchronized.
-* Do not bypass the type system without a documented reason.
-* Validate external data at runtime.
+* Use strict type checking appropriate to the project.
+* Avoid `any` unless there is a documented and justified reason.
+* Define explicit types for important domain and API structures.
+* Keep API contracts typed.
+* Do not use type assertions to hide actual type problems.
+* Validate untrusted external data at runtime.
 
-TypeScript types alone do not replace runtime validation.
+Static typing does not replace runtime validation.
 
----
-
-## 7. Naming
-
-Use clear and consistent naming.
-
-### Components
-
-Use PascalCase:
-
-```text
-ProductCard.tsx
-CheckoutForm.tsx
-UserTable.tsx
-```
-
-### Functions and variables
-
-Use camelCase:
-
-```text
-calculateTotal()
-getUserOrders()
-isAuthenticated
-```
-
-### Constants
-
-Use project-consistent naming, normally:
-
-```text
-MAX_RETRY_COUNT
-API_BASE_URL
-```
-
-Names must describe purpose, not implementation details.
-
-Avoid unclear names such as:
-
-```text
-data
-temp
-thing
-stuff
-x
-foo
-```
-
-when a meaningful name is possible.
+Typed linting MAY be used to detect problems that ordinary linting cannot detect.
 
 ---
 
-## 8. File and Folder Structure
+## 9. API and Backend
 
-Organize code by responsibility and project architecture.
+APIs MUST have explicit contracts.
 
-Avoid:
-
-* Extremely large files.
-* Unrelated functionality in the same file.
-* Deeply nested folders without purpose.
-* Random file placement.
-
-Follow the structure defined in `ARCHITECTURE.md`.
-
-Do not introduce a new architectural pattern without justification.
-
----
-
-## 9. State Management
-
-Use the simplest state-management solution that correctly solves the problem.
-
-Rules:
-
-* Keep local state local when possible.
-* Do not create global state unnecessarily.
-* Do not duplicate the same source of truth.
-* Server state and UI state should be treated separately.
-* Persistent data should have a clear authoritative source.
-
-Avoid unnecessary state synchronization.
-
----
-
-## 10. API Development
-
-All APIs must have explicit contracts.
-
-Define:
+A contract SHOULD define:
 
 * Endpoint
 * HTTP method
-* Request format
-* Response format
 * Authentication requirements
 * Authorization requirements
-* Validation rules
-* Error responses
+* Request structure
+* Response structure
+* Validation
+* Error behavior
 
-Frontend must not assume an API exists without verifying its contract.
+Backend authorization MUST be enforced server-side.
 
-Do not create frontend-only fake APIs for production functionality.
+The frontend MUST NOT be treated as a security boundary.
 
----
-
-## 11. Backend Development
-
-Backend code must:
-
-* Validate incoming data.
-* Authenticate users where required.
-* Authorize actions server-side.
-* Handle errors consistently.
-* Avoid exposing sensitive information.
-* Use proper logging.
-* Keep business logic organized.
-* Use the database correctly.
-* Avoid trusting client-provided permissions.
-
-Security decisions must never depend only on frontend checks.
+API security MUST follow `SECURITY_RULES.md` and the applicable OWASP standards.
 
 ---
 
-## 12. Database
+## 10. Database
 
-Database design must be intentional.
+Persistent functionality MUST use the project's defined persistence layer.
 
-Before implementing persistent functionality:
+Before implementing database-dependent functionality:
 
 * Define the data model.
 * Define required fields.
-* Define relationships.
-* Define indexes where required.
-* Define constraints and validation.
-* Consider transactions for multi-step updates.
-* Consider data consistency and concurrency.
+* Define relationships where applicable.
+* Define validation rules.
+* Define indexes where needed.
+* Consider transaction requirements.
+* Consider concurrency and consistency.
 
-Do not use temporary in-memory storage for production persistence unless explicitly required by the project architecture.
+Temporary in-memory data MUST NOT replace required production persistence.
+
+Database access MUST remain behind the appropriate application boundary.
 
 ---
 
-## 13. Error Handling
+## 11. Frontend and Backend Integration
 
-Every important operation must consider failure.
+A feature requiring server functionality is not complete when only the UI exists.
 
-Handle:
+The implementation MUST verify the complete path:
 
-* Network errors
+```text
+UI
+ ↓
+Client State
+ ↓
+API
+ ↓
+Backend Logic
+ ↓
+Database
+ ↓
+Response
+ ↓
+UI State
+```
+
+Mock data MAY be used for prototyping or tests when explicitly intended.
+
+Mock data MUST NOT silently remain as a substitute for required production functionality.
+
+---
+
+## 12. Validation and Error Handling
+
+All untrusted input MUST be validated at the appropriate boundary.
+
+Applications MUST handle expected failure conditions.
+
+Depending on the feature, this includes:
+
 * Validation errors
-* Authentication errors
-* Authorization errors
-* Database errors
+* Authentication failures
+* Authorization failures
+* Network failures
+* Database failures
+* Timeouts
+* Empty results
 * Unexpected server errors
-* Empty states
-* Timeout/retry scenarios where appropriate
 
-Never silently swallow errors.
+Errors MUST NOT be silently ignored.
 
-Do not use empty `catch` blocks.
-
-User-facing errors must be understandable without exposing sensitive technical information.
+User-facing error messages MUST NOT expose sensitive implementation details.
 
 ---
 
-## 14. Loading and Empty States
+## 13. Testing
 
-Data-driven interfaces must define appropriate:
+Tests MUST correspond to the behavior being implemented.
 
-* Loading states
-* Empty states
-* Error states
-* Success states
+Use the appropriate level:
 
-Do not leave users with blank screens while operations are running.
+* Unit
+* Integration
+* API
+* End-to-end
+
+Tests for changed behavior SHOULD accompany the implementation change.
+
+A passing test suite alone does not prove that the requirements are complete; requirements and acceptance criteria must also be verified.
+
+Google's engineering practices emphasize testing changed behavior and keeping tests with the corresponding change.
 
 ---
 
-## 15. Security
+## 14. Code Review
 
-Security must be considered during implementation, not added afterward.
+Changes SHOULD be:
 
-Minimum principles:
+* Focused
+* Understandable
+* Reviewable
+* Testable
+* Limited to the intended scope
 
-* Validate all untrusted input.
-* Sanitize where required.
-* Enforce authorization server-side.
-* Never expose secrets in frontend code.
-* Never commit credentials or private keys.
-* Use secure authentication/session handling.
-* Follow least-privilege principles.
-* Do not trust client-provided roles or permissions.
-* Protect sensitive endpoints.
+Prefer small, self-contained changes over large unrelated changes.
 
-Follow `SECURITY_RULES.md` for detailed security requirements.
+Separate large refactorings from feature changes when practical.
+
+Code review SHOULD evaluate:
+
+* Design
+* Functionality
+* Complexity
+* Tests
+* Naming
+* Documentation
+* Maintainability
+* Security where relevant
+* Accessibility where relevant
+
+These principles are based on Google's published engineering code-review practices.
+
+---
+
+## 15. Git
+
+Use version control for all project changes.
+
+Commit messages SHOULD follow a consistent convention.
+
+When Conventional Commits are adopted, use:
+
+```text
+type(scope): description
+```
+
+Examples:
+
+```text
+feat(auth): add password reset
+fix(cart): correct quantity calculation
+docs(api): update order contract
+refactor(ui): simplify product card
+test(order): add checkout integration tests
+```
+
+Conventional Commits provides a standardized structure for machine-readable commit history.
 
 ---
 
@@ -320,163 +338,133 @@ Follow `SECURITY_RULES.md` for detailed security requirements.
 
 Before adding a dependency:
 
-1. Check whether the project already provides the functionality.
-2. Check whether an existing dependency can solve it.
-3. Consider maintenance and security.
-4. Avoid unnecessary packages.
+* Check whether the project already provides the functionality.
+* Check whether an existing dependency can solve the problem.
+* Evaluate maintenance and security.
+* Keep dependencies justified and minimal.
 
-Do not add dependencies only for trivial functionality that can be implemented safely with existing tools.
+Do not add dependencies for trivial functionality without a reason.
 
 ---
 
-## 17. Performance
+## 17. Configuration and Secrets
 
-Performance should be considered during implementation.
+Environment-specific configuration MUST be separated from source code.
 
-Avoid:
+Secrets MUST NOT be:
 
-* Unnecessary renders.
-* Unnecessary API requests.
-* Unoptimized database queries.
-* Large unnecessary client bundles.
-* Repeated expensive calculations.
-* Loading resources that are not needed.
+* Hardcoded
+* Committed to Git
+* Exposed to the client unnecessarily
+* Included in logs
 
-Do not prematurely optimize without evidence.
+Use the project's approved secret and configuration mechanism.
 
 ---
 
 ## 18. Accessibility
 
-Interfaces must support accessible usage.
+Web interfaces MUST follow the project's accessibility requirements.
+
+Where applicable, use WCAG 2.2 as the accessibility baseline.
 
 Consider:
 
-* Keyboard navigation
+* Keyboard access
 * Focus management
-* Semantic structure
 * Labels
 * Accessible names
+* Semantic structure
 * Contrast
-* Touch targets
-* Screen-reader compatibility
+* Touch interaction
+* Error identification
+* Responsive usage
 
-Follow `UX_RULES.md` and `DESIGN_SYSTEM.md`.
-
----
-
-## 19. Responsive Development
-
-Responsive behavior is part of implementation, not a final adjustment.
-
-Verify required layouts on:
-
-* Mobile
-* Tablet
-* Desktop
-
-Do not simply shrink the desktop layout.
-
-Mobile-specific UX should be implemented where necessary.
+WCAG 2.2 is a W3C Recommendation and was approved as ISO/IEC 40500:2025.
 
 ---
 
-## 20. Testing
+## 19. Security
 
-Important functionality must be tested at the appropriate level.
+Security requirements MUST be applied during development, not only during final review.
 
-Use:
+Web application security MUST follow `SECURITY_RULES.md`.
 
-* Unit tests
-* Integration tests
-* API tests
-* End-to-end tests
-
-as required by the feature.
-
-A feature is not complete because the UI renders successfully.
-
-Follow `TESTING_RULES.md`.
+OWASP ASVS 5.0.0 is the baseline verification standard for applicable web application security requirements.
 
 ---
 
-## 21. No Fake Completion
+## 20. No Fake Completion
 
-The following do NOT count as completed functionality:
+The following MUST NOT be reported as complete:
 
-* Static UI without required backend integration.
-* Mock data replacing required database functionality.
-* API endpoints that do not persist required data.
-* Database models without working application integration.
-* Buttons without implemented actions.
-* Forms without validation/submission handling.
-* Features that only work on the happy path.
-* Desktop-only implementation when mobile is required.
-
----
-
-## 22. Refactoring
-
-Refactor when it improves:
-
-* Readability
-* Reusability
-* Maintainability
-* Performance
-* Architecture
-* Security
-
-Avoid unnecessary rewrites.
-
-Do not refactor unrelated areas while implementing a focused feature unless required.
+* UI without required backend functionality.
+* Backend without required database persistence.
+* Database without application integration.
+* API without frontend integration when required.
+* Unvalidated forms.
+* Unimplemented buttons/actions.
+* Mock data replacing required production data.
+* Happy-path-only functionality where failure handling is required.
+* Untested critical functionality.
 
 ---
 
-## 23. Git and Changes
+## 21. Change Control
 
-Keep changes focused.
+If implementation reveals that the approved specification or architecture is incorrect:
 
-Each change should have a clear purpose.
+1. Document the discovery.
+2. Determine what artifact must change.
+3. Update the relevant specification or plan.
+4. Reconcile dependent artifacts.
+5. Verify the resulting implementation.
 
-Avoid mixing:
+Do not leave the specification, plan, tasks, and implementation contradicting one another.
 
-* Feature development
-* Unrelated refactoring
-* Large formatting changes
-* Dependency changes
-
-unless they are genuinely related.
-
-Before committing, verify that the project still builds and relevant tests pass.
+Spec Kit explicitly recommends keeping these artifacts aligned when requirements or implementation discoveries change.
 
 ---
 
-## 24. Documentation
+## 22. Completion
 
-Important architectural or behavioral decisions must be documented.
-
-If implementation differs from the specification:
-
-* Identify the difference.
-* Explain why.
-* Update the appropriate documentation when approved.
-
-Documentation must reflect the actual system.
-
----
-
-## 25. Completion Rule
-
-Before declaring a task complete:
+A feature is complete only when:
 
 * Requirements are satisfied.
-* Code builds successfully.
-* Relevant tests pass.
+* Acceptance criteria are satisfied.
+* Implementation matches the approved plan.
+* Required frontend functionality works.
+* Required backend functionality works.
+* Required database persistence works.
 * API integration works.
-* Database integration works when required.
+* Validation works.
 * Security requirements are satisfied.
-* UX requirements are satisfied.
-* Responsive behavior is verified.
+* Accessibility requirements are satisfied where applicable.
+* Relevant tests pass.
+* Integration has been verified.
 * No known critical blocker remains.
 
-If any required item is incomplete, report the task as incomplete.
+The status MUST accurately reflect reality.
+
+Never claim that something was tested if it was not tested.
+
+Never claim that something is complete if required work remains.
+
+---
+
+## 23. Source Standards
+
+This development system uses authoritative standards and references rather than invented project rules.
+
+Primary references currently include:
+
+* GitHub Spec Kit — Spec-Driven Development
+* OWASP ASVS — Application Security Verification
+* OWASP API Security guidance
+* W3C WCAG 2.2 — Accessibility
+* Twelve-Factor App — Application operational principles
+* Google Engineering Practices — Code Review
+* Conventional Commits — Commit convention
+* Semantic Versioning — Versioning where applicable
+
+Standards MUST be versioned or linked explicitly when a requirement depends on a specific version.
